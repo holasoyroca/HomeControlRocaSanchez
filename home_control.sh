@@ -272,15 +272,26 @@ menu_bloatware() {
                 done
                 ;;
             4)
-                echo "Eliminando bloatware preinstalado en Samsung (OneUI)..."
+                echo "Optimizando y limpiando bloatware en Samsung Galaxy (S23 Ultra / OneUI)..."
                 for pkg in \
+                  com.samsung.android.bixby.ondevice.jajp \
+                  com.samsung.android.bixby.ondevice.enus \
+                  com.samsung.android.bixby.ondevice.eses \
                   com.facebook.services com.facebook.system com.facebook.appmanager \
-                  com.facebook.katana com.samsung.android.bixby.agent \
-                  com.samsung.android.bixby.wakeup com.samsung.android.spaymini \
-                  com.samsung.android.game.gamehome com.microsoft.skydrive; do
-                    echo -n "Eliminando $pkg: "
-                    adb -s "$ADB_TARGET" shell pm uninstall -k --user 0 "$pkg"
+                  com.samsung.android.bixby.agent com.samsung.android.bixby.wakeup \
+                  com.samsung.android.bixbyvision.framework com.samsung.android.rubin.app \
+                  com.sec.android.diagmonagent com.samsung.android.dqagent \
+                  com.samsung.android.game.gamehome com.samsung.android.spaymini; do
+                    echo -n "Neutralizando $pkg: "
+                    adb -s "$ADB_TARGET" shell pm uninstall "$pkg" >/dev/null 2>&1 || true
+                    adb -s "$ADB_TARGET" shell pm uninstall -k --user 0 "$pkg" 2>/dev/null || \
+                    adb -s "$ADB_TARGET" shell pm disable-user --user 0 "$pkg"
                 done
+                adb -s "$ADB_TARGET" shell settings put global window_animation_scale 0.5
+                adb -s "$ADB_TARGET" shell settings put global transition_animation_scale 0.5
+                adb -s "$ADB_TARGET" shell settings put global animator_duration_scale 0.5
+                adb -s "$ADB_TARGET" shell pm trim-caches 999G
+                adb -s "$ADB_TARGET" shell df -h /data
                 ;;
             5)
                 echo "Optimizando Samsung Galaxy Watch 5 (Wear OS) y ahorrando batería..."

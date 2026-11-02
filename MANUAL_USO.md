@@ -16,6 +16,7 @@ Herramienta integral en Bash para gestionar desde Linux todos los dispositivos i
 | **Teclast T20** | `192.168.100.239` | Tablet Android (`00:92:fa:20:7c:ff`) | Control por USB o ADB Wi-Fi (`adb tcpip 5555`), Pantalla en vivo (`scrcpy`), Limpieza Spyware |
 | **Galaxy Watch 5** | `192.168.100.139` | Reloj Wear OS (`SM-R910`) | Auto-detección mDNS, Esfera en vivo (`scrcpy`), Optimización de batería y animaciones `0.5x` |
 | **Galaxy Watch 8 Classic** | `192.168.100.245` | Reloj Wear OS (`SM-L505F`) | Auto-detección mDNS, Esfera en vivo (`scrcpy`), Optimización de batería y animaciones `0.5x` |
+| **Galaxy S23 Ultra** | `192.168.100.138` | Móvil One UI (`SM-S918B`) | Auto-detección mDNS, Pantalla en vivo (`scrcpy`), Limpieza de Bloatware/Bixby/Meta y animaciones `0.5x` |
 | **iPhone XR (Fernando)** | *USB Lightning* | Apple iPhone XR 64GB (`iOS 18.7.10`) | Auditoría `AppleSmartBattery`, purga de caché NAND (`19.7 GB`), perfil DNS AdGuard DoH |
 | **Móviles / Tablets** | *USB o Wi-Fi* | Android (Xiaomi, Samsung...) | Pantalla en vivo (`scrcpy`), Limpieza de Bloatware (MIUI/HyperOS/OneUI), Capturas, APKs |
 
