@@ -1,6 +1,6 @@
 {
   "_comment": "Inventario portable de dispositivos del SOC Roca Sánchez. Se indexa por MAC (prioritario, resiste cambios de IP DHCP y migraciones a Raspberry Pi) y por IP (respaldo).",
-  "updated_at": "2026-11-02T21:08:26",
+  "updated_at": "2026-11-02T22:50:34",
   "by_mac": {
     "88:0F:A2:59:2B:DF": {
       "name": "Router / Gateway Principal",
@@ -201,6 +201,22 @@
       "trusted": true,
       "last_ip": "192.168.100.249",
       "notes": "Placa base / red MSI"
+    },
+    "B6:FC:E7:97:45:40": {
+      "name": "Router ASUS RT-AX52 Pro",
+      "icon": "🌐",
+      "type": "ASUSWRT Wi-Fi 6 (MT7981B)",
+      "trusted": true,
+      "last_ip": "192.168.100.241",
+      "notes": "Nodo Wi-Fi 6 / Futuro servidor SOC OpenWrt/SSH"
+    },
+    "BC:FC:E7:97:45:40": {
+      "name": "Router ASUS RT-AX52 Pro",
+      "icon": "🌐",
+      "type": "ASUSWRT Wi-Fi 6 (MT7981B)",
+      "trusted": true,
+      "last_ip": "192.168.100.241",
+      "notes": "Nodo Wi-Fi 6 / Futuro servidor SOC OpenWrt/SSH"
     }
   },
   "by_ip": {
@@ -231,6 +247,14 @@
       "type": "SOC Server (Linux Mint)",
       "trusted": true,
       "notes": "Servidor central SOC"
+    },
+    "192.168.100.241": {
+      "name": "Router ASUS RT-AX52 Pro",
+      "icon": "🌐",
+      "type": "ASUSWRT Wi-Fi 6 (MT7981B)",
+      "trusted": true,
+      "last_ip": "192.168.100.241",
+      "notes": "Nodo Wi-Fi 6 / Futuro servidor SOC OpenWrt/SSH"
     }
   }
 }

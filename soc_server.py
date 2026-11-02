@@ -835,9 +835,13 @@ HTML_PAGE = """<!DOCTYPE html>
         <div class="audit-row"><span>Dirección IP Actual:</span><strong id="m-ip" style="color:var(--cyan)">--</strong></div>
         <div class="audit-row"><span>Dirección Física (MAC):</span><strong id="m-mac" style="color:var(--amber)">--</strong></div>
         <div class="audit-row"><span>Fabricante Hardware (OUI):</span><strong id="m-vendor" style="color:var(--green)">--</strong></div>
-        <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
-          <span style="color:var(--muted); font-size:11px;">¿No sabes qué dispositivo es? Escanea sus puertos para identificarlo:</span>
-          <button class="soc-btn" style="padding:6px 12px;" onclick="auditSelectedDevice()" id="btn-audit">🔬 Escaneo Profundo Nmap</button>
+        <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span style="color:var(--muted); font-size:11px;">Auditoría y Control en Router ASUS RT-AX52 Pro:</span>
+          <div style="display:flex; gap:6px;">
+            <button class="soc-btn" style="padding:6px 10px;" onclick="auditSelectedDevice()" id="btn-audit">🔬 Escaneo Nmap</button>
+            <button class="soc-btn danger" style="padding:6px 10px;" onclick="kickOnAsus(true)">⛔ Expulsar / Bloquear MAC</button>
+            <button class="soc-btn success" style="padding:6px 10px;" onclick="kickOnAsus(false)">🔓 Desbloquear MAC</button>
+          </div>
         </div>
         <div id="m-audit-results" style="margin-top:8px; display:none; border-top:1px solid #1b3154; padding-top:8px;"></div>
       </div>
@@ -1037,7 +1041,26 @@ HTML_PAGE = """<!DOCTYPE html>
     } catch (e) {
       resBox.innerHTML = '<div style="color:var(--red)">Error al escanear el nodo.</div>';
     }
-    btn.textContent = '🔬 Escaneo Profundo Nmap';
+    btn.textContent = '🔬 Escaneo Nmap';
+  }
+
+  async function kickOnAsus(block) {
+    if (!SELECTED_DEV || !SELECTED_DEV.mac || SELECTED_DEV.mac.startsWith('--')) return;
+    const resBox = document.getElementById('m-audit-results');
+    resBox.style.display = 'block';
+    resBox.innerHTML = `<div style="color:var(--amber)">Enviando orden SSH al Router ASUS RT-AX52 Pro (${SELECTED_DEV.mac})...</div>`;
+    try {
+      const r = await fetch('/api/asus/kick', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({mac: SELECTED_DEV.mac, ip: SELECTED_DEV.ip, block: block})
+      });
+      const d = await r.json();
+      resBox.innerHTML = `<div style="color:${d.ok ? 'var(--green)' : 'var(--red)'}"><strong>${d.msg}</strong></div>`;
+      fetchStatus();
+    } catch (e) {
+      resBox.innerHTML = '<div style="color:var(--red)">Error comunicando con Router ASUS.</div>';
+    }
   }
 
   async function saveDevice() {
@@ -1231,6 +1254,46 @@ class SOCHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 res = {"ok": False, "msg": f"Fallo al autenticar con EZVIZ: {e}"}
             log_event("INFO" if res.get("ok") else "WARN", f"EZVIZ Config: {res.get('msg')}")
+            body = json.dumps(res).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(body)
+        elif parsed.path == "/api/asus/kick":
+            length = int(self.headers.get("Content-Length", "0"))
+            raw = self.rfile.read(length).decode("utf-8")
+            data = json.loads(raw)
+            mac = data.get("mac", "").strip().upper()
+            block = bool(data.get("block", True))
+            if not re.match(r"^([0-9A-F]{2}:){5}[0-9A-F]{2}$", mac):
+                res = {"ok": False, "msg": "MAC no válida para bloqueo en router."}
+            else:
+                try:
+                    if block:
+                        remote_cmd = (
+                            f"iwpriv ra0 set DisConnectSta={mac} 2>/dev/null; "
+                            f"iwpriv rax0 set DisConnectSta={mac} 2>/dev/null; "
+                            f"iptables -D FORWARD -m mac --mac-source {mac} -j DROP 2>/dev/null; "
+                            f"iptables -I FORWARD -m mac --mac-source {mac} -j DROP; "
+                            f"iptables -D INPUT -m mac --mac-source {mac} -j DROP 2>/dev/null; "
+                            f"iptables -I INPUT -m mac --mac-source {mac} -j DROP"
+                        )
+                        msg = f"⛔ Dispositivo {mac} expulsado del Wi-Fi ASUS y bloqueado en su Firewall."
+                    else:
+                        remote_cmd = (
+                            f"iptables -D FORWARD -m mac --mac-source {mac} -j DROP 2>/dev/null || true; "
+                            f"iptables -D INPUT -m mac --mac-source {mac} -j DROP 2>/dev/null || true"
+                        )
+                        msg = f"🔓 Dispositivo {mac} desbloqueado en el Firewall del Router ASUS."
+                    subprocess.run(
+                        ["ssh", "-o", "ConnectTimeout=4", "-o", "StrictHostKeyChecking=no", "admin@192.168.100.241", remote_cmd],
+                        check=True,
+                        timeout=6,
+                    )
+                    log_event("ALERT" if block else "INFO", msg)
+                    res = {"ok": True, "msg": msg}
+                except Exception as e:
+                    res = {"ok": False, "msg": f"Error SSH ASUS: {e}"}
             body = json.dumps(res).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")

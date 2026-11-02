@@ -13,7 +13,7 @@ from pyezvizapi.exceptions import EzvizAuthVerificationCode, PyEzvizError
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CRED_FILE = os.path.join(BASE_DIR, ".ezviz_credentials.json")
-DEFAULT_REGION = "ieuopen.ezvizlife.com"
+DEFAULT_REGION = "apiieu.ezvizlife.com"
 
 
 def load_creds():
@@ -126,9 +126,15 @@ def configure_account(account, password, serial="", sms_code="", region=DEFAULT_
     except EzvizAuthVerificationCode:
         return {"ok": False, "needs_2fa": True, "msg": "EZVIZ ha enviado un código de verificación 2FA a tu correo/SMS. Introdúcelo en el campo Código 2FA y vuelve a guardar."}
     except PyEzvizError as e:
-        return {"ok": False, "msg": f"Error EZVIZ: {e}"}
+        err_str = str(e) or repr(e)
+        if "1226" in err_str:
+            return {
+                "ok": False,
+                "msg": "La cuenta jumpstyleroca@gmail.com existe en Europa (apiieu.ezvizlife.com), pero la contraseña no coincide (Código 1226). Si iniciaste sesión con Google en la app EZVIZ, pon la contraseña propia de EZVIZ.",
+            }
+        return {"ok": False, "msg": f"Error EZVIZ: {err_str}"}
     except Exception as e:
-        return {"ok": False, "msg": f"Error: {e}"}
+        return {"ok": False, "msg": f"Error: {str(e) or repr(e)}"}
 
 
 if __name__ == "__main__":
