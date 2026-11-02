@@ -1,6 +1,6 @@
 {
   "_comment": "Inventario portable de dispositivos del SOC Roca Sánchez. Se indexa por MAC (prioritario, resiste cambios de IP DHCP y migraciones a Raspberry Pi) y por IP (respaldo).",
-  "updated_at": "2026-11-02T22:50:34",
+  "updated_at": "2026-11-02T23:23:34",
   "by_mac": {
     "88:0F:A2:59:2B:DF": {
       "name": "Router / Gateway Principal",
@@ -217,6 +217,14 @@
       "trusted": true,
       "last_ip": "192.168.100.241",
       "notes": "Nodo Wi-Fi 6 / Futuro servidor SOC OpenWrt/SSH"
+    },
+    "C8:5E:A9:46:79:7C": {
+      "name": "PC Central Linux Mint (SOC Master)",
+      "icon": "💻",
+      "type": "Servidor SOC",
+      "trusted": true,
+      "last_ip": "192.168.100.253",
+      "notes": "Host principal Linux Mint"
     }
   },
   "by_ip": {

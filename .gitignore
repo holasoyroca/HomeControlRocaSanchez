@@ -1,2 +1,5 @@
-
 .ezviz_credentials.json
+.notas_locales_privadas.md
+__pycache__/
+*.pyc
+*.idsig
