@@ -66,7 +66,9 @@ Desde el **Menú 3** puedes conectar cualquier móvil o tablet Android de dos fo
   3. En `./home_control.sh` elige la opción `3` -> `3` e introduce la `IP:PUERTO` y el código de 6 dígitos.
 
 Una vez conectado tu móvil, desde el **Menú 4 (`scrcpy`)** y el **Menú 5 (`Limpiador de Bloatware`)** puedes:
-* **Manejar el móvil en una ventana de tu escritorio Linux** con ratón y teclado (`scrcpy`).
+* **Manejar el móvil o tablet en una ventana de tu escritorio Linux** con ratón y teclado (`scrcpy`).
+* **Limpiar Spyware y Bloatware de la Tablet Teclast T20 (`192.168.100.239`)**:
+  * Neutraliza y desinstala el conocido backdoor/spyware chino **Adups FOTA** (`com.adups.fota` y `com.adups.fota.sysoper`), el rastreador de ubicación de **Baidu** (`com.baidu.map.location`), el teclado chino Pinyin (`com.google.android.inputmethod.pinyin`), `com.example`, `com.mediatek.mtklogger` y Google Play Music (`com.google.android.music`).
 * **Limpiar Bloatware de Xiaomi (MIUI / HyperOS)**: Elimina el demonio de publicidad `com.miui.msa.global`, telemetría `com.miui.analytics`, `com.miui.daemon`, navegador promocional, servicios ocultos de Facebook y juegos basura.
 * **Limpiar Bloatware de Samsung (OneUI)**: Elimina servicios en segundo plano de Facebook, Bixby innecesario, Samsung Pay Mini, Game Home y OneDrive preinstalado.
 * **Restaurar cualquier paquete** en 1 segundo si algún día lo necesitas (`adb shell cmd package install-existing <paquete>`).

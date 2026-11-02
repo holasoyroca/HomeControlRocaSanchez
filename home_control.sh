@@ -200,13 +200,14 @@ menu_bloatware() {
         echo -e "   🧹 LIMPIADOR DE BLOATWARE Y OPTIMIZADOR (Activo: ${C_GREEN}$ADB_TARGET${C_RESET})"
         echo -e "${C_CYAN}=========================================================${C_RESET}"
         echo " 1) Limpiar Bloatware TV Toshiba / Vestel / Android TV (Freeview UK, Telemetría, Demos)"
-        echo " 2) Limpiar Bloatware Móvil XIAOMI / REDMI / POCO (Publicidad MSA, Analytics, Basura MIUI/HyperOS)"
-        echo " 3) Limpiar Bloatware Móvil SAMSUNG (Facebook preinstalado, Bixby extra, telemetría)"
-        echo " 4) Instalar Projectivy Launcher (Sin anuncios) y quitar Launcher de Google en TV"
-        echo " 5) Restaurar Launcher original de Google en TV"
-        echo " 6) Liberar espacio de almacenamiento y limpiar caché (pm trim-caches + df -h)"
-        echo " 7) Buscar / Listar paquetes instalados en el dispositivo"
-        echo " 8) Desinstalar o Restaurar un paquete manualmente por nombre"
+        echo " 2) Limpiar Spyware/Bloatware Tablet TECLAST T20 (Adups FOTA backdoor, Baidu, Pinyin)"
+        echo " 3) Limpiar Bloatware Móvil XIAOMI / REDMI / POCO (Publicidad MSA, Analytics, Basura MIUI/HyperOS)"
+        echo " 4) Limpiar Bloatware Móvil SAMSUNG (Facebook preinstalado, Bixby extra, telemetría)"
+        echo " 5) Instalar Projectivy Launcher (Sin anuncios) y quitar Launcher de Google en TV"
+        echo " 6) Restaurar Launcher original de Google en TV"
+        echo " 7) Liberar espacio de almacenamiento y limpiar caché (pm trim-caches + df -h)"
+        echo " 8) Buscar / Listar paquetes instalados en el dispositivo"
+        echo " 9) Desinstalar o Restaurar un paquete manualmente por nombre"
         echo " 0) Volver al menú principal"
         read -rp "Elige una opción: " mb
         case $mb in
@@ -226,6 +227,18 @@ menu_bloatware() {
                 done
                 ;;
             2)
+                echo "Eliminando Spyware (Adups FOTA / Baidu) y Bloatware en Teclast T20..."
+                for pkg in \
+                  com.adups.fota com.adups.fota.sysoper com.baidu.map.location \
+                  com.google.android.inputmethod.pinyin com.google.android.music \
+                  com.example com.mediatek.mtklogger com.google.android.feedback \
+                  com.android.providers.partnerbookmarks; do
+                    echo -n "Desactivando/Eliminando $pkg: "
+                    adb -s "$ADB_TARGET" shell pm disable-user --user 0 "$pkg" >/dev/null 2>&1 || true
+                    adb -s "$ADB_TARGET" shell pm uninstall -k --user 0 "$pkg"
+                done
+                ;;
+            3)
                 echo "Eliminando publicidad y telemetría de Xiaomi (MIUI / HyperOS)..."
                 for pkg in \
                   com.miui.msa.global com.miui.analytics com.miui.daemon \
@@ -237,7 +250,7 @@ menu_bloatware() {
                     adb -s "$ADB_TARGET" shell pm uninstall -k --user 0 "$pkg"
                 done
                 ;;
-            3)
+            4)
                 echo "Eliminando bloatware preinstalado en Samsung (OneUI)..."
                 for pkg in \
                   com.facebook.services com.facebook.system com.facebook.appmanager \
@@ -248,7 +261,7 @@ menu_bloatware() {
                     adb -s "$ADB_TARGET" shell pm uninstall -k --user 0 "$pkg"
                 done
                 ;;
-            4)
+            5)
                 echo "Descargando e instalando Projectivy Launcher oficial..."
                 APK_URL=$(curl -s https://api.github.com/repos/spocky/miproja1/releases/latest | grep -o 'https://[^"]*\.apk' | head -n 1)
                 curl -sSL "$APK_URL" -o /tmp/ProjectivyLauncher.apk
@@ -261,7 +274,7 @@ menu_bloatware() {
                 adb -s "$ADB_TARGET" shell input keyevent 3
                 echo -e "${C_GREEN}✅ Projectivy Launcher activado sin anuncios.${C_RESET}"
                 ;;
-            5)
+            6)
                 adb -s "$ADB_TARGET" shell cmd package install-existing com.google.android.tvrecommendations >/dev/null 2>&1
                 adb -s "$ADB_TARGET" shell pm enable com.google.android.tvlauncher
                 adb -s "$ADB_TARGET" shell pm enable com.google.android.tvrecommendations
@@ -269,11 +282,11 @@ menu_bloatware() {
                 adb -s "$ADB_TARGET" shell input keyevent 3
                 echo -e "${C_GREEN}✅ Launcher original restaurado.${C_RESET}"
                 ;;
-            6)
+            7)
                 adb -s "$ADB_TARGET" shell pm trim-caches 999G
                 adb -s "$ADB_TARGET" shell df -h /data
                 ;;
-            7)
+            8)
                 read -rp "Filtro de búsqueda (deja en blanco para ver todas las de usuario): " filtro
                 if [ -z "$filtro" ]; then
                     adb -s "$ADB_TARGET" shell pm list packages -3
@@ -281,7 +294,7 @@ menu_bloatware() {
                     adb -s "$ADB_TARGET" shell pm list packages | grep -i "$filtro"
                 fi
                 ;;
-            8)
+            9)
                 read -rp "Nombre del paquete: " pkg
                 read -rp "¿(d)esinstalar o (r)estaurar '$pkg'? [d/r]: " acc
                 if [ "$acc" = "d" ]; then
