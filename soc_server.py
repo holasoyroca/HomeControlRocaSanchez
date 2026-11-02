@@ -38,15 +38,19 @@ KNOWN_DEVICES = {
     "192.168.100.138": {"name": "Galaxy S23 Ultra",        "icon": "📱", "type": "One UI / ADB",    "trusted": True},
     "192.168.100.139": {"name": "Galaxy Watch 5 (44mm)",   "icon": "⌚", "type": "Wear OS",         "trusted": True},
     "192.168.100.140": {"name": "Dispositivo Móvil (.140)","icon": "📱", "type": "Wi-Fi",           "trusted": True},
-    "192.168.100.142": {"name": "Galaxy Tab S9",           "icon": "平板", "type": "One UI / ADB",  "trusted": True},
+    "192.168.100.142": {"name": "Galaxy Tab S9",           "icon": "📲", "type": "One UI / ADB",    "trusted": True},
+    "192.168.100.144": {"name": "Interfaz Red (.144)",     "icon": "💻", "type": "Host Local",      "trusted": True},
     "192.168.100.163": {"name": "Dispositivo AzureWave",   "icon": "📡", "type": "IoT",             "trusted": True},
+    "192.168.100.194": {"name": "OnePlus / Móvil (.194)",  "icon": "📱", "type": "Android Wi-Fi",   "trusted": True},
     "192.168.100.201": {"name": "TV Toshiba 65 Salón",     "icon": "📺", "type": "Android TV 11",   "trusted": True},
     "192.168.100.238": {"name": "Dispositivo Casa (.238)", "icon": "📡", "type": "Wi-Fi",           "trusted": True},
     "192.168.100.239": {"name": "Consola SOC Teclast T20", "icon": "🛡️", "type": "SOC Display",     "trusted": True},
+    "192.168.100.240": {"name": "Apple iPhone XR",         "icon": "🍎", "type": "iOS 18.7.2",      "trusted": True},
     "192.168.100.245": {"name": "Galaxy Watch 8 Classic",  "icon": "⌚", "type": "Wear OS",         "trusted": True},
     "192.168.100.247": {"name": "Dispositivo Casa (.247)", "icon": "📡", "type": "Wi-Fi",           "trusted": True},
     "192.168.100.249": {"name": "Equipo MSI (.249)",       "icon": "🎮", "type": "PC / Host",       "trusted": True},
     "192.168.100.250": {"name": "Nodo Central froca-mint", "icon": "💻", "type": "SOC Server",      "trusted": True},
+    "192.168.100.253": {"name": "Nodo Central froca-mint", "icon": "💻", "type": "SOC Server",      "trusted": True},
 }
 
 EVENT_LOGS = []
@@ -467,7 +471,7 @@ HTML_PAGE = """<!DOCTYPE html>
       <span style="font-size:26px;">🛡️</span>
       <div>
         <h1>SOC ROCA SÁNCHEZ // RED DOMÉSTICA</h1>
-        <div style="font-size:11px; color:var(--muted);">NODO CENTRAL: 192.168.100.250 (froca-mint) &bull; DISPLAY: TECLAST T20</div>
+        <div style="font-size:11px; color:var(--muted);">NODO CENTRAL: 192.168.100.253 (froca-mint) &bull; DISPLAY: TECLAST T20</div>
       </div>
     </div>
     <div id="sec-badge" class="status-pill">SISTEMA SEGURO</div>

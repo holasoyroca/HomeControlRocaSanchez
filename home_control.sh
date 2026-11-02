@@ -484,8 +484,9 @@ menu_iphone() {
 </dict>
 </plist>
 EOF
+                HOST_IP=$(hostname -I | awk '{print $1}')
                 echo -e "${C_GREEN}🌐 Abre Safari en tu iPhone XR y entra en:${C_RESET}"
-                echo -e "${C_YELLOW}   http://192.168.100.250:8888/adguard.mobileconfig${C_RESET}"
+                echo -e "${C_YELLOW}   http://${HOST_IP}:8888/adguard.mobileconfig${C_RESET}"
                 echo "   (Después ve a Ajustes -> Perfil descargado -> Instalar. Pulsa Ctrl+C aquí cuando termines)"
                 python3 -m http.server 8888 --directory /tmp/ios_dns
                 ;;
@@ -584,13 +585,14 @@ while true; do
                 nohup python3 "$(dirname "$0")/soc_server.py" >/tmp/soc_server.log 2>&1 &
                 sleep 1
             fi
+            HOST_IP=$(hostname -I | awk '{print $1}')
             adb connect 192.168.100.239:5555 >/dev/null 2>&1 || true
             adb -s 192.168.100.239:5555 shell svc power stayon true 2>/dev/null || true
             adb -s 192.168.100.239:5555 shell settings put global policy_control "immersive.full=com.android.chrome" 2>/dev/null || true
             adb -s 192.168.100.239:5555 shell input keyevent 224 2>/dev/null || true
             adb -s 192.168.100.239:5555 shell input keyevent 82 2>/dev/null || true
-            adb -s 192.168.100.239:5555 shell am start -a android.intent.action.VIEW -n com.android.chrome/com.google.android.apps.chrome.Main -d "http://192.168.100.250:8090" 2>/dev/null || true
-            echo -e "${C_GREEN}✅ Pantalla SOC activa en http://192.168.100.250:8090 y enviada a la Teclast T20.${C_RESET}"
+            adb -s 192.168.100.239:5555 shell am start -a android.intent.action.VIEW -n com.android.chrome/com.google.android.apps.chrome.Main -d "http://${HOST_IP}:8090" 2>/dev/null || true
+            echo -e "${C_GREEN}✅ Pantalla SOC activa en http://${HOST_IP}:8090 y enviada a la Teclast T20.${C_RESET}"
             ;;
         0) exit 0 ;;
         *) echo "Opción no válida." ;;
