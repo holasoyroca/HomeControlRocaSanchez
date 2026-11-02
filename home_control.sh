@@ -27,6 +27,8 @@ pausa() {
 escanear_dispositivos() {
     echo -e "\n${C_CYAN}🔍 Escaneando dispositivos Google Cast / Nest / Chromecast en tu red...${C_RESET}"
     catt scan
+    echo -e "\n${C_CYAN}⌚📱 Dispositivos Android 11+ / Wear OS (Galaxy Watch 5) detectados por mDNS:${C_RESET}"
+    adb mdns services
     echo -e "\n${C_CYAN}📡 Comprobando Tablet Teclast T20 y otros equipos en Wi-Fi...${C_RESET}"
     if ping -c 1 -W 1 192.168.100.239 >/dev/null 2>&1; then
         echo -e "${C_GREEN}✔ 192.168.100.239 - Tablet Teclast T20 (MAC 00:92:fa:20:7c:ff - Activa en Wi-Fi)${C_RESET}"
@@ -59,14 +61,15 @@ seleccionar_cast() {
 }
 
 seleccionar_adb() {
-    echo -e "\n${C_CYAN}=== Conectar / Seleccionar Dispositivo Android (TV, Tablet o Móvil) ===${C_RESET}"
-    echo " 1) TV Toshiba 65 Salón    (192.168.100.201:5555)"
-    echo " 2) Tablet Teclast T20     (192.168.100.239:5555 - Requiere activar ADB Wi-Fi antes)"
-    echo " 3) Activar ADB por Wi-Fi en Tablet/Móvil conectado por USB (adb tcpip 5555)"
-    echo " 4) Conectar a otra IP manualmente (puerto 5555)"
-    echo " 5) Emparejar Móvil Android 11+ por Depuración Inalámbrica (Código de 6 dígitos)"
-    echo " 6) Usar Tablet/Móvil conectado directamente por cable USB"
-    read -rp "Elige opción [1-6]: " a_opt
+    echo -e "\n${C_CYAN}=== Conectar / Seleccionar Dispositivo Android (TV, Reloj, Tablet o Móvil) ===${C_RESET}"
+    echo " 1) TV Toshiba 65 Salón       (192.168.100.201:5555)"
+    echo " 2) Tablet Teclast T20        (192.168.100.239:5555)"
+    echo " 3) Reloj Galaxy Watch 5      (SM-R910 en 192.168.100.139 - Auto mDNS)"
+    echo " 4) Activar ADB por Wi-Fi en Tablet/Móvil conectado por USB (adb tcpip 5555)"
+    echo " 5) Conectar a otra IP manualmente (puerto 5555)"
+    echo " 6) Emparejar otro Móvil Android 11+ por Depuración Inalámbrica (Código de 6 dígitos)"
+    echo " 7) Usar Tablet/Móvil conectado directamente por cable USB"
+    read -rp "Elige opción [1-7]: " a_opt
     case $a_opt in
         1)
             ADB_TARGET="192.168.100.201:5555"
@@ -77,6 +80,24 @@ seleccionar_adb() {
             adb connect "$ADB_TARGET"
             ;;
         3)
+            conn_mdns=$(adb mdns services | awk '/_adb-tls-connect._tcp/ {print $3; exit}')
+            pair_mdns=$(adb mdns services | awk '/_adb-tls-pairing._tcp/ {print $3; exit}')
+            if [ -n "$pair_mdns" ]; then
+                echo -e "${C_GREEN}⌚ Detectada pantalla de vinculación del Galaxy Watch 5 en $pair_mdns${C_RESET}"
+                read -rp "Introduce el código de 6 dígitos que muestra el reloj: " w_code
+                adb pair "$pair_mdns" "$w_code"
+                conn_mdns=$(adb mdns services | awk '/_adb-tls-connect._tcp/ {print $3; exit}')
+            fi
+            if [ -n "$conn_mdns" ]; then
+                ADB_TARGET="$conn_mdns"
+                if ! adb connect "$ADB_TARGET" | grep -q "connected to"; then
+                    echo -e "${C_YELLOW}👉 En el reloj pulsa '+ Vincular dispositivo nuevo' y vuelve a elegir esta opción 3.${C_RESET}"
+                fi
+            else
+                echo -e "${C_YELLOW}⚠️ No se detectó el reloj en mDNS. Asegúrate de tener activada la Depuración Inalámbrica en el Watch 5.${C_RESET}"
+            fi
+            ;;
+        4)
             echo -e "${C_YELLOW}1. Conecta la Teclast T20 (o móvil) por cable USB a este PC.${C_RESET}"
             echo -e "${C_YELLOW}2. Activa 'Opciones de desarrollador -> Depuración por USB' y acepta el aviso en la pantalla.${C_RESET}"
             read -rp "Pulsa ENTER cuando esté conectada por USB..." _
@@ -91,7 +112,7 @@ seleccionar_adb() {
                 echo -e "${C_RED}❌ No se detectó por USB (o falta aceptar el permiso en la pantalla de la tablet).${C_RESET}"
             fi
             ;;
-        4)
+        5)
             read -rp "Introduce la IP del dispositivo (ej. 192.168.100.140): " ip_dev
             [[ "$ip_dev" != *:* ]] && ip_dev="${ip_dev}:5555"
             ADB_TARGET="$ip_dev"
@@ -99,16 +120,16 @@ seleccionar_adb() {
             adb connect "$ADB_TARGET"
             echo -e "${C_YELLOW}👉 Si es la primera vez, acepta el cartel en la pantalla del dispositivo.${C_RESET}"
             ;;
-        5)
-            echo -e "${C_YELLOW}En tu móvil ve a: Ajustes -> Opciones de desarrollador -> Depuración inalámbrica -> Vincular con código${C_RESET}"
-            read -rp "Introduce IP:PUERTO de vinculación que muestra el móvil (ej. 192.168.100.140:39123): " pair_addr
+        6)
+            echo -e "${C_YELLOW}En tu móvil/reloj ve a: Ajustes -> Opciones de desarrollador -> Depuración inalámbrica -> Vincular con código${C_RESET}"
+            read -rp "Introduce IP:PUERTO de vinculación (ej. 192.168.100.139:39123): " pair_addr
             read -rp "Introduce el código de 6 dígitos: " pair_code
             adb pair "$pair_addr" "$pair_code"
             read -rp "Ahora introduce IP:PUERTO principal de Depuración inalámbrica: " conn_addr
             ADB_TARGET="$conn_addr"
             adb connect "$ADB_TARGET"
             ;;
-        6)
+        7)
             usb_dev=$(adb devices | awk 'NR>1 && $2=="device" && $1 !~ /:/ {print $1; exit}')
             if [ -n "$usb_dev" ]; then
                 ADB_TARGET="$usb_dev"
@@ -203,11 +224,12 @@ menu_bloatware() {
         echo " 2) Limpiar Spyware/Bloatware Tablet TECLAST T20 (Adups FOTA backdoor, Baidu, Pinyin)"
         echo " 3) Limpiar Bloatware Móvil XIAOMI / REDMI / POCO (Publicidad MSA, Analytics, Basura MIUI/HyperOS)"
         echo " 4) Limpiar Bloatware Móvil SAMSUNG (Facebook preinstalado, Bixby extra, telemetría)"
-        echo " 5) Instalar Projectivy Launcher (Sin anuncios) y quitar Launcher de Google en TV"
-        echo " 6) Restaurar Launcher original de Google en TV"
-        echo " 7) Liberar espacio de almacenamiento y limpiar caché (pm trim-caches + df -h)"
-        echo " 8) Buscar / Listar paquetes instalados en el dispositivo"
-        echo " 9) Desinstalar o Restaurar un paquete manualmente por nombre"
+        echo " 5) Optimizar y limpiar Bloatware Reloj GALAXY WATCH 5 (Global Goals, Bixby, Animaciones 0.5x)"
+        echo " 6) Instalar Projectivy Launcher (Sin anuncios) y quitar Launcher de Google en TV"
+        echo " 7) Restaurar Launcher original de Google en TV"
+        echo " 8) Liberar espacio de almacenamiento y limpiar caché (pm trim-caches + df -h)"
+        echo " 9) Buscar / Listar paquetes instalados en el dispositivo"
+        echo "10) Desinstalar o Restaurar un paquete manualmente por nombre"
         echo " 0) Volver al menú principal"
         read -rp "Elige una opción: " mb
         case $mb in
@@ -262,6 +284,23 @@ menu_bloatware() {
                 done
                 ;;
             5)
+                echo "Optimizando Samsung Galaxy Watch 5 (Wear OS) y ahorrando batería..."
+                for pkg in \
+                  com.samsung.sree \
+                  com.samsung.android.bixby.agent \
+                  com.samsung.android.bixby.wakeup \
+                  com.microsoft.office.outlook; do
+                    echo -n "Eliminando $pkg: "
+                    adb -s "$ADB_TARGET" shell pm uninstall -k --user 0 "$pkg"
+                done
+                echo "Acelerando animaciones del reloj a 0.5x..."
+                adb -s "$ADB_TARGET" shell settings put global window_animation_scale 0.5
+                adb -s "$ADB_TARGET" shell settings put global transition_animation_scale 0.5
+                adb -s "$ADB_TARGET" shell settings put global animator_duration_scale 0.5
+                adb -s "$ADB_TARGET" shell pm trim-caches 999G
+                echo -e "${C_GREEN}✅ Galaxy Watch 5 optimizado y acelerado.${C_RESET}"
+                ;;
+            6)
                 echo "Descargando e instalando Projectivy Launcher oficial..."
                 APK_URL=$(curl -s https://api.github.com/repos/spocky/miproja1/releases/latest | grep -o 'https://[^"]*\.apk' | head -n 1)
                 curl -sSL "$APK_URL" -o /tmp/ProjectivyLauncher.apk
@@ -274,7 +313,7 @@ menu_bloatware() {
                 adb -s "$ADB_TARGET" shell input keyevent 3
                 echo -e "${C_GREEN}✅ Projectivy Launcher activado sin anuncios.${C_RESET}"
                 ;;
-            6)
+            7)
                 adb -s "$ADB_TARGET" shell cmd package install-existing com.google.android.tvrecommendations >/dev/null 2>&1
                 adb -s "$ADB_TARGET" shell pm enable com.google.android.tvlauncher
                 adb -s "$ADB_TARGET" shell pm enable com.google.android.tvrecommendations
@@ -282,11 +321,11 @@ menu_bloatware() {
                 adb -s "$ADB_TARGET" shell input keyevent 3
                 echo -e "${C_GREEN}✅ Launcher original restaurado.${C_RESET}"
                 ;;
-            7)
+            8)
                 adb -s "$ADB_TARGET" shell pm trim-caches 999G
                 adb -s "$ADB_TARGET" shell df -h /data
                 ;;
-            8)
+            9)
                 read -rp "Filtro de búsqueda (deja en blanco para ver todas las de usuario): " filtro
                 if [ -z "$filtro" ]; then
                     adb -s "$ADB_TARGET" shell pm list packages -3
@@ -294,7 +333,7 @@ menu_bloatware() {
                     adb -s "$ADB_TARGET" shell pm list packages | grep -i "$filtro"
                 fi
                 ;;
-            9)
+            10)
                 read -rp "Nombre del paquete: " pkg
                 read -rp "¿(d)esinstalar o (r)estaurar '$pkg'? [d/r]: " acc
                 if [ "$acc" = "d" ]; then
