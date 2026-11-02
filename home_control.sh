@@ -366,7 +366,8 @@ menu_iphone() {
         echo " 3) 📂 Montar fotos/vídeos del iPhone en ~/iPhone_XR para liberar espacio (ifuse)"
         echo " 4) ⏏️  Desmontar carpeta ~/iPhone_XR"
         echo " 5) 🛡️  Servir Perfil DNS AdGuard (Cero anuncios/telemetría en iOS sin gastar batería)"
-        echo " 6) 🔄 Reinicio limpio de demonios y cachés temporales del iPhone"
+        echo " 6) 🧹 Forzar purga de Caché NAND retenida en iOS (Libera los GB 'purgables' ocultos)"
+        echo " 7) 🔄 Reinicio limpio de demonios y cachés temporales del iPhone"
         echo " 0) Volver al menú principal"
         read -rp "Elige una opción: " mi
         case $mi in
@@ -398,7 +399,6 @@ menu_iphone() {
                 ;;
             5)
                 mkdir -p /tmp/ios_dns
-                curl -sSL "https://adguard-dns.io/en/public-dns.html" >/dev/null 2>&1 || true
                 cat << 'EOF' > /tmp/ios_dns/adguard.mobileconfig
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -451,6 +451,23 @@ EOF
                 python3 -m http.server 8888 --directory /tmp/ios_dns
                 ;;
             6)
+                echo "Purga de Crash Logs y activación de cache_delete en NAND del iPhone..."
+                mkdir -p /tmp/iphone_crashes
+                idevicecrashreport /tmp/iphone_crashes >/dev/null 2>&1 || true
+                rm -rf /tmp/iphone_crashes
+                mkdir -p "$HOME/iPhone_XR"
+                if ifuse "$HOME/iPhone_XR"; then
+                    echo "Iniciando presión controlada en NAND para obligar a iOS a soltar los ~19 GB de caché purgable..."
+                    dd if=/dev/zero of="$HOME/iPhone_XR/Downloads/purge_cache.tmp" bs=1M count=4096 status=progress 2>/dev/null || true
+                    rm -f "$HOME/iPhone_XR/Downloads/purge_cache.tmp"
+                    fusermount -u "$HOME/iPhone_XR" 2>/dev/null || true
+                    echo -e "${C_GREEN}✅ Purga completada. Estado actual de disco:${C_RESET}"
+                    ideviceinfo -q com.apple.disk_usage | grep -E "AmountDataAvailable|TotalDataAvailable"
+                else
+                    echo -e "${C_RED}❌ Conecta y desbloquea el iPhone XR por USB antes de ejecutar la purga.${C_RESET}"
+                fi
+                ;;
+            7)
                 idevicediagnostics restart
                 ;;
             0) break ;;
