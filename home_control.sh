@@ -287,9 +287,16 @@ menu_bloatware() {
                 echo "Optimizando Samsung Galaxy Watch 5 (Wear OS) y ahorrando batería..."
                 for pkg in \
                   com.samsung.sree \
+                  com.samsung.sree.classic \
+                  com.samsung.sree.countdown \
+                  com.samsung.sree.digital \
+                  com.samsung.sree.spin \
                   com.samsung.android.bixby.agent \
                   com.samsung.android.bixby.wakeup \
-                  com.microsoft.office.outlook; do
+                  com.microsoft.office.outlook \
+                  com.google.android.apps.wearable.retailattractloop \
+                  com.sec.android.diagmonagent \
+                  com.samsung.android.dqagent; do
                     echo -n "Eliminando $pkg: "
                     adb -s "$ADB_TARGET" shell pm uninstall -k --user 0 "$pkg"
                 done
