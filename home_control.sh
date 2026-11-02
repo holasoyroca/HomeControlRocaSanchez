@@ -27,6 +27,12 @@ pausa() {
 escanear_dispositivos() {
     echo -e "\n${C_CYAN}🔍 Escaneando dispositivos Google Cast / Nest / Chromecast en tu red...${C_RESET}"
     catt scan
+    echo -e "\n${C_CYAN}📡 Comprobando Tablet Teclast T20 y otros equipos en Wi-Fi...${C_RESET}"
+    if ping -c 1 -W 1 192.168.100.239 >/dev/null 2>&1; then
+        echo -e "${C_GREEN}✔ 192.168.100.239 - Tablet Teclast T20 (MAC 00:92:fa:20:7c:ff - Activa en Wi-Fi)${C_RESET}"
+    else
+        echo -e "${C_YELLOW}○ 192.168.100.239 - Tablet Teclast T20 (En reposo / pantalla apagada)${C_RESET}"
+    fi
     echo -e "\n${C_CYAN}📱 Dispositivos Android (ADB) conectados actualmente:${C_RESET}"
     adb devices -l
 }
@@ -53,18 +59,39 @@ seleccionar_cast() {
 }
 
 seleccionar_adb() {
-    echo -e "\n${C_CYAN}=== Conectar / Seleccionar Dispositivo Android (TV o Móvil) ===${C_RESET}"
-    echo " 1) TV Toshiba 65 Salón (192.168.100.201:5555)"
-    echo " 2) Conectar a otra TV / Fire TV / Móvil por IP (puerto 5555)"
-    echo " 3) Emparejar Móvil Android 11+ por Depuración Inalámbrica (Código de 6 dígitos)"
-    echo " 4) Usar Móvil conectado por cable USB"
-    read -rp "Elige opción [1-4]: " a_opt
+    echo -e "\n${C_CYAN}=== Conectar / Seleccionar Dispositivo Android (TV, Tablet o Móvil) ===${C_RESET}"
+    echo " 1) TV Toshiba 65 Salón    (192.168.100.201:5555)"
+    echo " 2) Tablet Teclast T20     (192.168.100.239:5555 - Requiere activar ADB Wi-Fi antes)"
+    echo " 3) Activar ADB por Wi-Fi en Tablet/Móvil conectado por USB (adb tcpip 5555)"
+    echo " 4) Conectar a otra IP manualmente (puerto 5555)"
+    echo " 5) Emparejar Móvil Android 11+ por Depuración Inalámbrica (Código de 6 dígitos)"
+    echo " 6) Usar Tablet/Móvil conectado directamente por cable USB"
+    read -rp "Elige opción [1-6]: " a_opt
     case $a_opt in
         1)
             ADB_TARGET="192.168.100.201:5555"
             adb connect "$ADB_TARGET"
             ;;
         2)
+            ADB_TARGET="192.168.100.239:5555"
+            adb connect "$ADB_TARGET"
+            ;;
+        3)
+            echo -e "${C_YELLOW}1. Conecta la Teclast T20 (o móvil) por cable USB a este PC.${C_RESET}"
+            echo -e "${C_YELLOW}2. Activa 'Opciones de desarrollador -> Depuración por USB' y acepta el aviso en la pantalla.${C_RESET}"
+            read -rp "Pulsa ENTER cuando esté conectada por USB..." _
+            usb_dev=$(adb devices | awk 'NR>1 && $2=="device" && $1 !~ /:/ {print $1; exit}')
+            if [ -n "$usb_dev" ]; then
+                adb -s "$usb_dev" tcpip 5555
+                sleep 2
+                ADB_TARGET="192.168.100.239:5555"
+                adb connect "$ADB_TARGET"
+                echo -e "${C_GREEN}✅ ¡Listo! Ya puedes desconectar el cable USB y manejarla por Wi-Fi en $ADB_TARGET.${C_RESET}"
+            else
+                echo -e "${C_RED}❌ No se detectó por USB (o falta aceptar el permiso en la pantalla de la tablet).${C_RESET}"
+            fi
+            ;;
+        4)
             read -rp "Introduce la IP del dispositivo (ej. 192.168.100.140): " ip_dev
             [[ "$ip_dev" != *:* ]] && ip_dev="${ip_dev}:5555"
             ADB_TARGET="$ip_dev"
@@ -72,7 +99,7 @@ seleccionar_adb() {
             adb connect "$ADB_TARGET"
             echo -e "${C_YELLOW}👉 Si es la primera vez, acepta el cartel en la pantalla del dispositivo.${C_RESET}"
             ;;
-        3)
+        5)
             echo -e "${C_YELLOW}En tu móvil ve a: Ajustes -> Opciones de desarrollador -> Depuración inalámbrica -> Vincular con código${C_RESET}"
             read -rp "Introduce IP:PUERTO de vinculación que muestra el móvil (ej. 192.168.100.140:39123): " pair_addr
             read -rp "Introduce el código de 6 dígitos: " pair_code
@@ -81,13 +108,13 @@ seleccionar_adb() {
             ADB_TARGET="$conn_addr"
             adb connect "$ADB_TARGET"
             ;;
-        4)
+        6)
             usb_dev=$(adb devices | awk 'NR>1 && $2=="device" && $1 !~ /:/ {print $1; exit}')
             if [ -n "$usb_dev" ]; then
                 ADB_TARGET="$usb_dev"
-                echo -e "${C_GREEN}✅ Móvil por USB seleccionado: $ADB_TARGET${C_RESET}"
+                echo -e "${C_GREEN}✅ Dispositivo por USB seleccionado: $ADB_TARGET${C_RESET}"
             else
-                echo -e "${C_RED}❌ No se detectó ningún móvil por USB. Conéctalo y activa la Depuración USB.${C_RESET}"
+                echo -e "${C_RED}❌ No se detectó ningún dispositivo por USB. Conéctalo y activa la Depuración USB.${C_RESET}"
             fi
             ;;
     esac

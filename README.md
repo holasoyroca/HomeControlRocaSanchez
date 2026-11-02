@@ -13,6 +13,7 @@ Herramienta integral en Bash para gestionar desde Linux todos los dispositivos i
 | **Comedor** | `192.168.100.136` | Google Chromecast | Envío de películas locales, YouTube, música y Megafonía TTS |
 | **Altavoz Salón** | `192.168.100.135` | Google Home Mini | Megafonía por voz (TTS en español), envío de música/radio, volumen |
 | **Habitación** | `192.168.100.132` | Google Home Mini | Megafonía por voz (TTS en español), envío de música/radio, volumen |
+| **Teclast T20** | `192.168.100.239` | Tablet Android (`00:92:fa:20:7c:ff`) | Control por USB o ADB Wi-Fi (`adb tcpip 5555`), Pantalla en vivo (`scrcpy`), Limpieza Bloatware |
 | **Móviles / Tablets** | *USB o Wi-Fi* | Android (Xiaomi, Samsung...) | Pantalla en vivo (`scrcpy`), Limpieza de Bloatware (MIUI/HyperOS/OneUI), Capturas, APKs |
 
 ---
