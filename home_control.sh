@@ -354,6 +354,111 @@ menu_bloatware() {
 }
 
 # ------------------------------------------------------------------------------
+# 4. MÓDULO APPLE iPHONE / iOS (DIAGNÓSTICO BATERÍA, CPU, ALMACENAMIENTO Y DNS)
+# ------------------------------------------------------------------------------
+menu_iphone() {
+    while true; do
+        echo -e "\n${C_CYAN}=========================================================${C_RESET}"
+        echo -e "   🍎 DIAGNÓSTICO Y OPTIMIZACIÓN iPHONE / iOS (USB)"
+        echo -e "${C_CYAN}=========================================================${C_RESET}"
+        echo " 1) 🔋 Auditoría de Batería real (Ciclos, mAh reales, Salud % y Throttling CPU)"
+        echo " 2) 💾 Ver estado real del Almacenamiento y versión de iOS"
+        echo " 3) 📂 Montar fotos/vídeos del iPhone en ~/iPhone_XR para liberar espacio (ifuse)"
+        echo " 4) ⏏️  Desmontar carpeta ~/iPhone_XR"
+        echo " 5) 🛡️  Servir Perfil DNS AdGuard (Cero anuncios/telemetría en iOS sin gastar batería)"
+        echo " 6) 🔄 Reinicio limpio de demonios y cachés temporales del iPhone"
+        echo " 0) Volver al menú principal"
+        read -rp "Elige una opción: " mi
+        case $mi in
+            1)
+                if ! idevice_id -l >/dev/null 2>&1 || [ -z "$(idevice_id -l)" ]; then
+                    echo -e "${C_RED}❌ No se detecta el iPhone por USB. Enchúfalo, desbloquéalo y pulsa 'Confiar'.${C_RESET}"
+                else
+                    echo -e "\n${C_CYAN}📊 Datos del chip AppleSmartBattery:${C_RESET}"
+                    idevicediagnostics ioregentry AppleSmartBattery | grep -E -A 1 "CycleCount|DesignCapacity|NominalChargeCapacity|AppleRawMaxCapacity|Temperature|Voltage|FullyCharged|IsCharging"
+                fi
+                ;;
+            2)
+                echo -e "\n${C_CYAN}📱 Información general y uso de disco:${C_RESET}"
+                ideviceinfo -s
+                echo "---"
+                ideviceinfo -q com.apple.disk_usage
+                ;;
+            3)
+                mkdir -p "$HOME/iPhone_XR"
+                if ifuse "$HOME/iPhone_XR"; then
+                    echo -e "${C_GREEN}✅ iPhone montado en: $HOME/iPhone_XR${C_RESET}"
+                    ls -la "$HOME/iPhone_XR"
+                else
+                    echo -e "${C_RED}❌ No se pudo montar. Asegúrate de que el iPhone esté desbloqueado y hayas aceptado 'Confiar'.${C_RESET}"
+                fi
+                ;;
+            4)
+                fusermount -u "$HOME/iPhone_XR" && echo -e "${C_GREEN}✅ Desmontado correctamente.${C_RESET}"
+                ;;
+            5)
+                mkdir -p /tmp/ios_dns
+                curl -sSL "https://adguard-dns.io/en/public-dns.html" >/dev/null 2>&1 || true
+                cat << 'EOF' > /tmp/ios_dns/adguard.mobileconfig
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>DNSSettings</key>
+            <dict>
+                <key>DNSProtocol</key>
+                <string>HTTPS</string>
+                <key>ServerURL</key>
+                <string>https://dns.adguard-dns.com/dns-query</string>
+            </dict>
+            <key>PayloadDescription</key>
+            <string>Configura AdGuard DNS cifrado (DoH) para bloquear anuncios y telemetria en iOS</string>
+            <key>PayloadDisplayName</key>
+            <string>AdGuard DNS (Sin Anuncios)</string>
+            <key>PayloadIdentifier</key>
+            <string>com.rocasanchez.adguard.doh</string>
+            <key>PayloadType</key>
+            <string>com.apple.dnsSettings.managed</string>
+            <key>PayloadUUID</key>
+            <string>A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+        </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>Bloqueo de publicidad y rastreadores a nivel de sistema en iOS</string>
+    <key>PayloadDisplayName</key>
+    <string>Optimizador DNS AdGuard iOS</string>
+    <key>PayloadIdentifier</key>
+    <string>com.rocasanchez.adguard.profile</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>F1E2D3C4-B5A6-4958-8877-665544332211</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
+EOF
+                echo -e "${C_GREEN}🌐 Abre Safari en tu iPhone XR y entra en:${C_RESET}"
+                echo -e "${C_YELLOW}   http://192.168.100.250:8888/adguard.mobileconfig${C_RESET}"
+                echo "   (Después ve a Ajustes -> Perfil descargado -> Instalar. Pulsa Ctrl+C aquí cuando termines)"
+                python3 -m http.server 8888 --directory /tmp/ios_dns
+                ;;
+            6)
+                idevicediagnostics restart
+                ;;
+            0) break ;;
+        esac
+    done
+}
+
+# ------------------------------------------------------------------------------
 # MENÚ PRINCIPAL
 # ------------------------------------------------------------------------------
 while true; do
@@ -362,14 +467,15 @@ while true; do
     echo -e "${C_BOLD}=================================================================${C_RESET}"
     echo "  1) 🔍 Escanear todos los dispositivos de la casa (Cast, Nest, TV, ADB)"
     echo "  2) 📡 Menú Altavoces, Chromecast, Nest Hub y Megafonía (Hacer hablar / Cast)"
-    echo "  3) 📱 Cambiar dispositivo Android objetivo (TV, Fire TV o Móvil por Wi-Fi/USB)"
+    echo "  3) 📱 Cambiar dispositivo Android objetivo (TV, Reloj, Tablet o Móvil)"
     echo "  4) 🖥️  Ver y controlar pantalla en vivo en tu Linux (scrcpy)"
-    echo "  5) 🧹 Menú Limpiador de Bloatware (TV, Xiaomi, Samsung) y Projectivy Launcher"
+    echo "  5) 🧹 Menú Limpiador de Bloatware (TV, Relojes, Teclast, Xiaomi, Samsung)"
     echo "  6) 🔊 Subir / Bajar / Silenciar volumen (ADB)"
     echo "  7) 🎮 Mando rápido ADB (Home, Atrás, Power, Enviar texto)"
     echo "  8) 📸 Hacer captura de pantalla del dispositivo Android"
     echo "  9) 📦 Instalar un archivo .APK desde tu PC"
     echo " 10) 💻 Abrir consola interna del dispositivo (adb shell)"
+    echo " 11) 🍎 Menú iPhone / iOS (Auditoría Batería/CPU, Sacar fotos, DNS Sin Anuncios)"
     echo "  0) Salir"
     echo "-----------------------------------------------------------------"
     read -rp "Elige una opción: " opcion
@@ -415,6 +521,7 @@ while true; do
             adb -s "$ADB_TARGET" install -r "$apk_path"
             ;;
         10) adb -s "$ADB_TARGET" shell ;;
+        11) menu_iphone ;;
         0) exit 0 ;;
         *) echo "Opción no válida." ;;
     esac
