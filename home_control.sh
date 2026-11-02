@@ -532,6 +532,7 @@ while true; do
     echo "  9) 📦 Instalar un archivo .APK desde tu PC"
     echo " 10) 💻 Abrir consola interna del dispositivo (adb shell)"
     echo " 11) 🍎 Menú iPhone / iOS (Auditoría Batería/CPU, Sacar fotos, DNS Sin Anuncios)"
+    echo " 12) 🛡️  Iniciar / Abrir Pantalla SOC de Ciberseguridad en Teclast T20 (:8090)"
     echo "  0) Salir"
     echo "-----------------------------------------------------------------"
     read -rp "Elige una opción: " opcion
@@ -578,6 +579,19 @@ while true; do
             ;;
         10) adb -s "$ADB_TARGET" shell ;;
         11) menu_iphone ;;
+        12)
+            if ! pgrep -f "soc_server.py" >/dev/null 2>&1; then
+                nohup python3 "$(dirname "$0")/soc_server.py" >/tmp/soc_server.log 2>&1 &
+                sleep 1
+            fi
+            adb connect 192.168.100.239:5555 >/dev/null 2>&1 || true
+            adb -s 192.168.100.239:5555 shell svc power stayon true 2>/dev/null || true
+            adb -s 192.168.100.239:5555 shell settings put global policy_control "immersive.full=com.android.chrome" 2>/dev/null || true
+            adb -s 192.168.100.239:5555 shell input keyevent 224 2>/dev/null || true
+            adb -s 192.168.100.239:5555 shell input keyevent 82 2>/dev/null || true
+            adb -s 192.168.100.239:5555 shell am start -a android.intent.action.VIEW -n com.android.chrome/com.google.android.apps.chrome.Main -d "http://192.168.100.250:8090" 2>/dev/null || true
+            echo -e "${C_GREEN}✅ Pantalla SOC activa en http://192.168.100.250:8090 y enviada a la Teclast T20.${C_RESET}"
+            ;;
         0) exit 0 ;;
         *) echo "Opción no válida." ;;
     esac
