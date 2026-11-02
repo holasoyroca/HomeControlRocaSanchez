@@ -1,0 +1,236 @@
+{
+  "_comment": "Inventario portable de dispositivos del SOC Roca Sánchez. Se indexa por MAC (prioritario, resiste cambios de IP DHCP y migraciones a Raspberry Pi) y por IP (respaldo).",
+  "updated_at": "2026-11-02T21:08:26",
+  "by_mac": {
+    "88:0F:A2:59:2B:DF": {
+      "name": "Router / Gateway Principal",
+      "icon": "🌐",
+      "type": "Infraestructura",
+      "trusted": true,
+      "last_ip": "192.168.100.1",
+      "notes": "Puerta de enlace predeterminada de la fibra"
+    },
+    "BC:24:11:8D:E5:AF": {
+      "name": "Servidor Linux / VNC (.11)",
+      "icon": "🖥️",
+      "type": "Proxmox VM / Servidor",
+      "trusted": true,
+      "last_ip": "192.168.100.11",
+      "notes": "Máquina virtual Proxmox (OUI BC:24:11)"
+    },
+    "BC:24:11:3D:39:DA": {
+      "name": "Nodo Servidor (.27)",
+      "icon": "🖧",
+      "type": "Proxmox VM / Servidor",
+      "trusted": true,
+      "last_ip": "192.168.100.27",
+      "notes": "Máquina virtual Proxmox (OUI BC:24:11)"
+    },
+    "6C:4B:90:04:69:AC": {
+      "name": "Equipo Red LiteON (.100/.144)",
+      "icon": "💻",
+      "type": "PC / Host Local",
+      "trusted": true,
+      "last_ip": "192.168.100.144",
+      "notes": "Tarjeta de red LiteON Technology"
+    },
+    "7C:B9:4C:DD:6B:D7": {
+      "name": "Dispositivo IoT Bouffalo (.129)",
+      "icon": "🔌",
+      "type": "IoT / Enchufe o Bombilla",
+      "trusted": true,
+      "last_ip": "192.168.100.129",
+      "notes": "Chip Wi-Fi IoT Bouffalo Lab"
+    },
+    "8C:CE:4E:1C:E9:E4": {
+      "name": "Dispositivo IoT Espressif (.130)",
+      "icon": "🔌",
+      "type": "IoT ESP8266/ESP32",
+      "trusted": true,
+      "last_ip": "192.168.100.130",
+      "notes": "Microcontrolador Wi-Fi Espressif"
+    },
+    "DC:E5:5B:58:19:62": {
+      "name": "Nest Hub Dormitorio",
+      "icon": "🛏️",
+      "type": "Google Fuchsia OS",
+      "trusted": true,
+      "last_ip": "192.168.100.131",
+      "notes": "Pantalla inteligente dormitorio"
+    },
+    "7C:2E:BD:01:75:94": {
+      "name": "Google Home Habitación",
+      "icon": "🔊",
+      "type": "Google Cast OS",
+      "trusted": true,
+      "last_ip": "192.168.100.132",
+      "notes": "Altavoz inteligente habitación"
+    },
+    "BC:35:1E:E8:27:11": {
+      "name": "Dispositivo Casa (.133)",
+      "icon": "📡",
+      "type": "Wi-Fi Doméstico",
+      "trusted": true,
+      "last_ip": "192.168.100.133",
+      "notes": "Dispositivo habitual de la red"
+    },
+    "E4:AA:EC:4A:93:05": {
+      "name": "Cámara / IoT Hualai (.134)",
+      "icon": "📹",
+      "type": "Cámara / Smart Home",
+      "trusted": true,
+      "last_ip": "192.168.100.134",
+      "notes": "Fabricante Tianjin Hualai (ecosistema Xiaomi)"
+    },
+    "7C:2E:BD:5F:CB:86": {
+      "name": "Altavoz Salón",
+      "icon": "🔊",
+      "type": "Google Cast OS",
+      "trusted": true,
+      "last_ip": "192.168.100.135",
+      "notes": "Altavoz principal del salón (Megafonía SOC)"
+    },
+    "D8:8C:79:62:29:0A": {
+      "name": "Chromecast Comedor",
+      "icon": "📺",
+      "type": "Google Cast OS",
+      "trusted": true,
+      "last_ip": "192.168.100.136",
+      "notes": "Chromecast del comedor"
+    },
+    "0C:A6:4C:DA:54:5D": {
+      "name": "Dispositivo Casa (.137)",
+      "icon": "📱",
+      "type": "Wi-Fi Doméstico",
+      "trusted": true,
+      "last_ip": "192.168.100.137",
+      "notes": "Dispositivo habitual de la red"
+    },
+    "0E:00:65:74:48:45": {
+      "name": "Samsung Galaxy S23 Ultra",
+      "icon": "📱",
+      "type": "One UI / Android 16",
+      "trusted": true,
+      "last_ip": "192.168.100.138",
+      "notes": "Móvil principal SM-S918B (optimizado con AdGuard DNS)"
+    },
+    "36:E9:D5:F2:2A:64": {
+      "name": "Galaxy Watch 5 (44mm)",
+      "icon": "⌚",
+      "type": "Wear OS",
+      "trusted": true,
+      "last_ip": "192.168.100.139",
+      "notes": "Reloj SM-R910 optimizado"
+    },
+    "3A:BB:62:29:6A:FA": {
+      "name": "Dispositivo Móvil (.140)",
+      "icon": "📱",
+      "type": "Wi-Fi MAC Privada",
+      "trusted": true,
+      "last_ip": "192.168.100.140",
+      "notes": "Dispositivo móvil con MAC privada"
+    },
+    "42:24:B4:36:D0:3A": {
+      "name": "Samsung Galaxy Tab S9",
+      "icon": "📲",
+      "type": "One UI / Tablet",
+      "trusted": true,
+      "last_ip": "192.168.100.142",
+      "notes": "Tablet SM-X710 (optimizada con AdGuard DNS, 100% batería)"
+    },
+    "C0:EE:FB:D0:14:54": {
+      "name": "Móvil OnePlus",
+      "icon": "📱",
+      "type": "Android / OnePlus",
+      "trusted": true,
+      "last_ip": "192.168.100.194",
+      "notes": "Fabricante OnePlus Tech (Shenzhen)"
+    },
+    "AE:8A:F2:40:2C:A2": {
+      "name": "TV Toshiba 65 Salón",
+      "icon": "📺",
+      "type": "Android TV 11",
+      "trusted": true,
+      "last_ip": "192.168.100.201",
+      "notes": "Projectivy Launcher + SmartTube + AdGuard DNS"
+    },
+    "D2:8D:A0:40:06:BE": {
+      "name": "Dispositivo Casa (.238)",
+      "icon": "📡",
+      "type": "Wi-Fi MAC Privada",
+      "trusted": true,
+      "last_ip": "192.168.100.238",
+      "notes": "Dispositivo habitual en red"
+    },
+    "00:92:FA:20:7C:FF": {
+      "name": "Consola SOC Teclast T20",
+      "icon": "🛡️",
+      "type": "SOC Display (Android 7)",
+      "trusted": true,
+      "last_ip": "192.168.100.239",
+      "notes": "Pantalla dedicada del Centro de Operaciones de Seguridad"
+    },
+    "CA:45:92:34:83:B5": {
+      "name": "Apple iPhone XR",
+      "icon": "🍎",
+      "type": "iOS 18.7.2",
+      "trusted": true,
+      "last_ip": "192.168.100.240",
+      "notes": "iPhone XR auditado por USB (82% salud batería)"
+    },
+    "36:DC:73:93:41:C4": {
+      "name": "Galaxy Watch 8 Classic",
+      "icon": "⌚",
+      "type": "Wear OS",
+      "trusted": true,
+      "last_ip": "192.168.100.245",
+      "notes": "Reloj SM-L505F optimizado"
+    },
+    "32:61:CB:85:79:25": {
+      "name": "Dispositivo Casa (.247)",
+      "icon": "📡",
+      "type": "Wi-Fi MAC Privada",
+      "trusted": true,
+      "last_ip": "192.168.100.247",
+      "notes": "Dispositivo habitual en red"
+    },
+    "00:D8:61:2F:C7:8E": {
+      "name": "Equipo PC MSI (.249)",
+      "icon": "🎮",
+      "type": "PC / Micro-Star Intl",
+      "trusted": true,
+      "last_ip": "192.168.100.249",
+      "notes": "Placa base / red MSI"
+    }
+  },
+  "by_ip": {
+    "192.168.100.1": {
+      "name": "Router / Gateway Principal",
+      "icon": "🌐",
+      "type": "Infraestructura",
+      "trusted": true,
+      "notes": "Puerta de enlace fibra"
+    },
+    "192.168.100.163": {
+      "name": "Dispositivo IoT AzureWave (.163)",
+      "icon": "📡",
+      "type": "IoT AzureWave",
+      "trusted": true,
+      "notes": "Módulo Wi-Fi AzureWave"
+    },
+    "192.168.100.250": {
+      "name": "Nodo Central froca-mint",
+      "icon": "💻",
+      "type": "SOC Server (Linux Mint)",
+      "trusted": true,
+      "notes": "Servidor central SOC"
+    },
+    "192.168.100.253": {
+      "name": "Nodo Central froca-mint",
+      "icon": "💻",
+      "type": "SOC Server (Linux Mint)",
+      "trusted": true,
+      "notes": "Servidor central SOC"
+    }
+  }
+}
