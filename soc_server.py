@@ -806,6 +806,8 @@ HTML_PAGE = """<!DOCTYPE html>
     <div class="panel">
       <div class="panel-title"><span>🎛️ ACCIONES TÁCTICAS (STREAM DECK)</span></div>
       <div class="btn-grid">
+        <button class="soc-btn success" onclick="sendAction('ezviz_unlock_1')">🔓 Abrir Telefonillo</button>
+        <button class="soc-btn warn" onclick="openEzvizModal()">🔑 Config EZVIZ</button>
         <button class="soc-btn" onclick="sendAction('scan_now')">🔍 Escaneo Nmap</button>
         <button class="soc-btn warn" onclick="sendAction('tts_status')">🗣️ Informe por Voz</button>
         <button class="soc-btn" onclick="sendAction('tv_mute')">🔇 Mute TV Salón</button>
@@ -876,6 +878,42 @@ HTML_PAGE = """<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- MODAL DE VINCULACIÓN EZVIZ CLOUD API -->
+  <div class="modal-backdrop" id="ezviz-modal">
+    <div class="modal-card" style="max-width:520px;">
+      <div class="modal-header">
+        <h2>🔑 VINCULAR TELEFONILLO EZVIZ (WATCH 8 & SOC)</h2>
+        <button class="close-btn" onclick="closeEzvizModal()">✕ Cerrar</button>
+      </div>
+      <div class="audit-box">
+        Conecta tu cuenta de EZVIZ una sola vez. El servidor guardará el token de sesión cifrado localmente en <code>.ezviz_credentials.json</code> para que tanto tu <strong>Galaxy Watch 8 Classic</strong> como esta <strong>Pantalla SOC</strong> abran el telefonillo en 0,5 segundos.
+      </div>
+      <div class="form-group">
+        <label>Usuario EZVIZ (Correo electrónico o Teléfono con +34)</label>
+        <input type="text" class="form-input" id="ez-user" placeholder="Ej: tu_correo@gmail.com o +34600000000">
+      </div>
+      <div class="form-group">
+        <label>Contraseña EZVIZ</label>
+        <input type="password" class="form-input" id="ez-pass" placeholder="Contraseña de la app EZVIZ">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nº Serie Telefonillo (Opcional, se autodetecta)</label>
+          <input type="text" class="form-input" id="ez-serial" placeholder="Autodetectar (ej: K12345678)">
+        </div>
+        <div class="form-group">
+          <label>Código 2FA (Solo si EZVIZ te envía SMS/Email)</label>
+          <input type="text" class="form-input" id="ez-2fa" placeholder="Opcional">
+        </div>
+      </div>
+      <div id="ez-status" style="font-size:12px; display:none; padding:8px; border-radius:6px; background:#050b14;"></div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:4px;">
+        <button class="close-btn" onclick="closeEzvizModal()">Cancelar</button>
+        <button class="soc-btn success" style="padding:10px 18px;" onclick="saveEzvizConfig()" id="btn-ez-save">🔗 Vincular y Probar Conexión</button>
+      </div>
+    </div>
+  </div>
+
 <script>
   const ICONS = ['📱','📲','💻','🖥️','📺','⌚','🔊','🛏️','📹','🔌','📡','🌐','🛡️','🍎','🎮','🚨'];
   let CURRENT_DEVICES = [];
@@ -930,6 +968,49 @@ HTML_PAGE = """<!DOCTYPE html>
   function closeModal() {
     document.getElementById('dev-modal').classList.remove('open');
     SELECTED_DEV = null;
+  }
+
+  function openEzvizModal() {
+    document.getElementById('ez-status').style.display = 'none';
+    document.getElementById('ezviz-modal').classList.add('open');
+  }
+
+  function closeEzvizModal() {
+    document.getElementById('ezviz-modal').classList.remove('open');
+  }
+
+  async function saveEzvizConfig() {
+    const btn = document.getElementById('btn-ez-save');
+    const st = document.getElementById('ez-status');
+    btn.textContent = '⏳ Conectando con EZVIZ...';
+    st.style.display = 'block';
+    st.style.color = 'var(--cyan)';
+    st.textContent = 'Autenticando contra ieuopen.ezvizlife.com y buscando tu videoportero...';
+    try {
+      const r = await fetch('/api/ezviz/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          account: document.getElementById('ez-user').value,
+          password: document.getElementById('ez-pass').value,
+          serial: document.getElementById('ez-serial').value,
+          sms_code: document.getElementById('ez-2fa').value
+        })
+      });
+      const res = await r.json();
+      if (res.ok) {
+        st.style.color = 'var(--green)';
+        st.textContent = '✅ ' + res.msg;
+        setTimeout(() => { closeEzvizModal(); fetchStatus(); }, 1500);
+      } else {
+        st.style.color = 'var(--amber)';
+        st.textContent = '⚠️ ' + res.msg;
+      }
+    } catch (e) {
+      st.style.color = 'var(--red)';
+      st.textContent = '❌ Error de red al configurar EZVIZ.';
+    }
+    btn.textContent = '🔗 Vincular y Probar Conexión';
   }
 
   async function auditSelectedDevice() {
@@ -1127,11 +1208,56 @@ class SOCHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"ok":true}')
+        elif parsed.path == "/api/ezviz/config":
+            length = int(self.headers.get("Content-Length", "0"))
+            raw = self.rfile.read(length).decode("utf-8")
+            data = json.loads(raw)
+            ez_script = os.path.join(BASE_DIR, "ezviz_unlock.py")
+            try:
+                out = subprocess.check_output(
+                    [
+                        "/home/froca/.local/opt/cast-env/bin/python3",
+                        ez_script,
+                        "config",
+                        data.get("account", ""),
+                        data.get("password", ""),
+                        data.get("serial", ""),
+                        data.get("sms_code", ""),
+                    ],
+                    universal_newlines=True,
+                    timeout=18,
+                )
+                res = json.loads(out.strip().splitlines()[-1])
+            except Exception as e:
+                res = {"ok": False, "msg": f"Fallo al autenticar con EZVIZ: {e}"}
+            log_event("INFO" if res.get("ok") else "WARN", f"EZVIZ Config: {res.get('msg')}")
+            body = json.dumps(res).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(body)
 
     def run_tactical_cmd(self, cmd):
         tv = "192.168.100.201:5555"
         try:
-            if cmd == "scan_now":
+            if cmd in ("ezviz_unlock_1", "ezviz_unlock_2"):
+                lock_no = "2" if cmd.endswith("2") else "1"
+                ez_script = os.path.join(BASE_DIR, "ezviz_unlock.py")
+                proc = subprocess.run(
+                    ["/home/froca/.local/opt/cast-env/bin/python3", ez_script, "unlock", lock_no],
+                    capture_output=True,
+                    text=True,
+                    timeout=12,
+                )
+                try:
+                    res = json.loads(proc.stdout.strip().splitlines()[-1])
+                except Exception:
+                    res = {"ok": False, "msg": proc.stderr or proc.stdout or "Error desconocido"}
+                if res.get("ok"):
+                    log_event("INFO", f"🔓 TELEFONILLO EZVIZ ABIERTO: {res.get('msg')}")
+                else:
+                    log_event("ALERT", f"⚠️ No se pudo abrir EZVIZ: {res.get('msg')}")
+            elif cmd == "scan_now":
                 subprocess.run(["nmap", "-sn", "-T4", "192.168.100.0/24"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 log_event("INFO", "Barrido Nmap de subred 192.168.100.0/24 completado.")
             elif cmd == "tv_mute":
