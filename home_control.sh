@@ -64,7 +64,7 @@ seleccionar_adb() {
     echo -e "\n${C_CYAN}=== Conectar / Seleccionar Dispositivo Android (TV, Reloj, Tablet o Móvil) ===${C_RESET}"
     echo " 1) TV Toshiba 65 Salón       (192.168.100.201:5555)"
     echo " 2) Tablet Teclast T20        (192.168.100.239:5555)"
-    echo " 3) Reloj Galaxy Watch 5      (SM-R910 en 192.168.100.139 - Auto mDNS)"
+    echo " 3) Reloj Galaxy Watch 5 / 8  (SM-R910 .139 / SM-L505F .245 - Auto mDNS)"
     echo " 4) Activar ADB por Wi-Fi en Tablet/Móvil conectado por USB (adb tcpip 5555)"
     echo " 5) Conectar a otra IP manualmente (puerto 5555)"
     echo " 6) Emparejar otro Móvil Android 11+ por Depuración Inalámbrica (Código de 6 dígitos)"
@@ -80,21 +80,20 @@ seleccionar_adb() {
             adb connect "$ADB_TARGET"
             ;;
         3)
-            conn_mdns=$(adb mdns services | awk '/_adb-tls-connect._tcp/ {print $3; exit}')
-            pair_mdns=$(adb mdns services | awk '/_adb-tls-pairing._tcp/ {print $3; exit}')
-            if [ -n "$pair_mdns" ]; then
-                echo -e "${C_GREEN}⌚ Detectada pantalla de vinculación del Galaxy Watch 5 en $pair_mdns${C_RESET}"
+            pair_ip=$(avahi-browse -rt _adb-tls-pairing._tcp 2>/dev/null | awk -F'[][]' '/IPv4/ {ipv4=1} ipv4 && /address =/ {print $2; exit}')
+            pair_port=$(avahi-browse -rt _adb-tls-pairing._tcp 2>/dev/null | awk -F'[][]' '/IPv4/ {ipv4=1} ipv4 && /port =/ {print $2; exit}')
+            if [ -n "$pair_ip" ] && [ -n "$pair_port" ]; then
+                echo -e "${C_GREEN}⌚ Detectada pantalla de vinculación en ${pair_ip}:${pair_port}${C_RESET}"
                 read -rp "Introduce el código de 6 dígitos que muestra el reloj: " w_code
-                adb pair "$pair_mdns" "$w_code"
-                conn_mdns=$(adb mdns services | awk '/_adb-tls-connect._tcp/ {print $3; exit}')
+                adb pair "${pair_ip}:${pair_port}" "$w_code"
             fi
-            if [ -n "$conn_mdns" ]; then
-                ADB_TARGET="$conn_mdns"
-                if ! adb connect "$ADB_TARGET" | grep -q "connected to"; then
-                    echo -e "${C_YELLOW}👉 En el reloj pulsa '+ Vincular dispositivo nuevo' y vuelve a elegir esta opción 3.${C_RESET}"
-                fi
+            conn_ip=$(avahi-browse -rt _adb-tls-connect._tcp 2>/dev/null | awk -F'[][]' '/IPv4/ {ipv4=1} ipv4 && /address =/ {print $2; exit}')
+            conn_port=$(avahi-browse -rt _adb-tls-connect._tcp 2>/dev/null | awk -F'[][]' '/IPv4/ {ipv4=1} ipv4 && /port =/ {print $2; exit}')
+            if [ -n "$conn_ip" ] && [ -n "$conn_port" ]; then
+                ADB_TARGET="${conn_ip}:${conn_port}"
+                adb connect "$ADB_TARGET"
             else
-                echo -e "${C_YELLOW}⚠️ No se detectó el reloj en mDNS. Asegúrate de tener activada la Depuración Inalámbrica en el Watch 5.${C_RESET}"
+                echo -e "${C_YELLOW}⚠️ No se detectó ningún reloj activo en mDNS. Activa Depuración Inalámbrica en el reloj.${C_RESET}"
             fi
             ;;
         4)
