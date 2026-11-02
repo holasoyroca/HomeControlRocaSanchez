@@ -223,12 +223,13 @@ menu_bloatware() {
         echo " 2) Limpiar Spyware/Bloatware Tablet TECLAST T20 (Adups FOTA backdoor, Baidu, Pinyin)"
         echo " 3) Limpiar Bloatware Móvil XIAOMI / REDMI / POCO (Publicidad MSA, Analytics, Basura MIUI/HyperOS)"
         echo " 4) Limpiar Bloatware Móvil SAMSUNG (Facebook preinstalado, Bixby extra, telemetría)"
-        echo " 5) Optimizar y limpiar Bloatware Reloj GALAXY WATCH 5 (Global Goals, Bixby, Animaciones 0.5x)"
-        echo " 6) Instalar Projectivy Launcher (Sin anuncios) y quitar Launcher de Google en TV"
-        echo " 7) Restaurar Launcher original de Google en TV"
-        echo " 8) Liberar espacio de almacenamiento y limpiar caché (pm trim-caches + df -h)"
-        echo " 9) Buscar / Listar paquetes instalados en el dispositivo"
-        echo "10) Desinstalar o Restaurar un paquete manualmente por nombre"
+        echo " 5) Optimizar y limpiar Bloatware Reloj GALAXY WATCH 5 / 8 (Global Goals, Bixby, Animaciones 0.5x)"
+        echo " 6) 🛡️  Activar Bloqueador de Anuncios DNS AdGuard (S23 Ultra, TV, Relojes) + YouTube Sin Anuncios"
+        echo " 7) 📺 Instalar Projectivy Launcher (Menú sin anuncios) en TV"
+        echo " 8) 🔄 Restaurar Launcher original de Google en TV"
+        echo " 9) 💾 Liberar espacio de almacenamiento y limpiar caché (pm trim-caches + df -h)"
+        echo "10) 🔍 Buscar / Listar paquetes instalados en el dispositivo"
+        echo "11) 📦 Desinstalar o Restaurar un paquete manualmente por nombre"
         echo " 0) Volver al menú principal"
         read -rp "Elige una opción: " mb
         case $mb in
@@ -294,7 +295,7 @@ menu_bloatware() {
                 adb -s "$ADB_TARGET" shell df -h /data
                 ;;
             5)
-                echo "Optimizando Samsung Galaxy Watch 5 (Wear OS) y ahorrando batería..."
+                echo "Optimizando Samsung Galaxy Watch 5 / 8 (Wear OS) y ahorrando batería..."
                 for pkg in \
                   com.samsung.sree \
                   com.samsung.sree.classic \
@@ -315,9 +316,36 @@ menu_bloatware() {
                 adb -s "$ADB_TARGET" shell settings put global transition_animation_scale 0.5
                 adb -s "$ADB_TARGET" shell settings put global animator_duration_scale 0.5
                 adb -s "$ADB_TARGET" shell pm trim-caches 999G
-                echo -e "${C_GREEN}✅ Galaxy Watch 5 optimizado y acelerado.${C_RESET}"
+                echo -e "${C_GREEN}✅ Galaxy Watch optimizado y acelerado.${C_RESET}"
                 ;;
             6)
+                echo "1) Activar DNS Privado AdGuard (dns.adguard-dns.com) en $ADB_TARGET"
+                echo "2) Instalar NewPipe (YouTube sin anuncios compatible con Teclast T20 Android 7+ y móviles)"
+                echo "3) Instalar SmartTube (YouTube sin anuncios + SponsorBlock para Android TV)"
+                read -rp "Elige opción [1-3]: " ad_opt
+                case $ad_opt in
+                    1)
+                        adb -s "$ADB_TARGET" shell settings put global private_dns_mode hostname
+                        adb -s "$ADB_TARGET" shell settings put global private_dns_specifier dns.adguard-dns.com
+                        echo -e "${C_GREEN}✅ DNS AdGuard activado en $ADB_TARGET.${C_RESET}"
+                        ;;
+                    2)
+                        if [ ! -f /tmp/NewPipe.apk ]; then
+                            NP_URL=$(curl -s https://api.github.com/repos/TeamNewPipe/NewPipe/releases/latest | grep -o 'https://[^"]*\.apk' | head -n 1)
+                            curl -sSL "$NP_URL" -o /tmp/NewPipe.apk
+                        fi
+                        adb -s "$ADB_TARGET" install -r /tmp/NewPipe.apk
+                        ;;
+                    3)
+                        if [ ! -f /tmp/SmartTube.apk ]; then
+                            ST_URL=$(curl -s https://api.github.com/repos/yuliskov/SmartTube/releases | grep -o 'https://[^"]*armeabi-v7a\.apk' | head -n 1)
+                            curl -sSL "$ST_URL" -o /tmp/SmartTube.apk
+                        fi
+                        adb -s "$ADB_TARGET" install -r /tmp/SmartTube.apk
+                        ;;
+                esac
+                ;;
+            7)
                 echo "Descargando e instalando Projectivy Launcher oficial..."
                 APK_URL=$(curl -s https://api.github.com/repos/spocky/miproja1/releases/latest | grep -o 'https://[^"]*\.apk' | head -n 1)
                 curl -sSL "$APK_URL" -o /tmp/ProjectivyLauncher.apk
@@ -330,7 +358,7 @@ menu_bloatware() {
                 adb -s "$ADB_TARGET" shell input keyevent 3
                 echo -e "${C_GREEN}✅ Projectivy Launcher activado sin anuncios.${C_RESET}"
                 ;;
-            7)
+            8)
                 adb -s "$ADB_TARGET" shell cmd package install-existing com.google.android.tvrecommendations >/dev/null 2>&1
                 adb -s "$ADB_TARGET" shell pm enable com.google.android.tvlauncher
                 adb -s "$ADB_TARGET" shell pm enable com.google.android.tvrecommendations
@@ -338,11 +366,11 @@ menu_bloatware() {
                 adb -s "$ADB_TARGET" shell input keyevent 3
                 echo -e "${C_GREEN}✅ Launcher original restaurado.${C_RESET}"
                 ;;
-            8)
+            9)
                 adb -s "$ADB_TARGET" shell pm trim-caches 999G
                 adb -s "$ADB_TARGET" shell df -h /data
                 ;;
-            9)
+            10)
                 read -rp "Filtro de búsqueda (deja en blanco para ver todas las de usuario): " filtro
                 if [ -z "$filtro" ]; then
                     adb -s "$ADB_TARGET" shell pm list packages -3
@@ -350,7 +378,7 @@ menu_bloatware() {
                     adb -s "$ADB_TARGET" shell pm list packages | grep -i "$filtro"
                 fi
                 ;;
-            10)
+            11)
                 read -rp "Nombre del paquete: " pkg
                 read -rp "¿(d)esinstalar o (r)estaurar '$pkg'? [d/r]: " acc
                 if [ "$acc" = "d" ]; then
