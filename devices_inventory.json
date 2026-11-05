@@ -1,6 +1,6 @@
 {
   "_comment": "Inventario portable de dispositivos del SOC Roca Sánchez. Se indexa por MAC (prioritario, resiste cambios de IP DHCP y migraciones a Raspberry Pi) y por IP (respaldo).",
-  "updated_at": "2026-11-02T23:23:34",
+  "updated_at": "2026-11-02T23:24:34",
   "by_mac": {
     "88:0F:A2:59:2B:DF": {
       "name": "Router / Gateway Principal",
